@@ -41,6 +41,7 @@ import org.gradle.listener.ActionBroadcast;
 import org.gradle.sonar.runner.SonarProperties;
 import org.gradle.sonar.runner.SonarRunnerExtension;
 import org.gradle.sonar.runner.SonarRunnerRootExtension;
+import org.gradle.sonar.runner.tasks.GenerateSonarProperties;
 import org.gradle.sonar.runner.tasks.SonarRunner;
 import org.gradle.testing.jacoco.plugins.JacocoPlugin;
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension;
@@ -86,8 +87,10 @@ public class SonarRunnerPlugin implements Plugin<Project> {
     public void apply(Project project) {
         targetProject = project;
 
+        createSonarPropertiesTask(project);
+
         final Map<Project, ActionBroadcast<SonarProperties>> actionBroadcastMap = Maps.newHashMap();
-        SonarRunner sonarRunnerTask = createTask(project, actionBroadcastMap);
+        SonarRunner sonarRunnerTask = createSonarRunnerTask(project, actionBroadcastMap);
 
         ActionBroadcast<SonarProperties> actionBroadcast = addBroadcaster(actionBroadcastMap, project);
         project.subprojects(new Action<Project>() {
@@ -101,13 +104,18 @@ public class SonarRunnerPlugin implements Plugin<Project> {
         rootExtension.setForkOptions(sonarRunnerTask.getForkOptions());
     }
 
+    private void createSonarPropertiesTask(Project project) {
+        GenerateSonarProperties sonarProperties = project.getTasks().create("generateSonarProperties", GenerateSonarProperties.class);
+        sonarProperties.setDescription("Generates sonar-project.properties file in a specified directory.");
+    }
+
     private ActionBroadcast<SonarProperties> addBroadcaster(Map<Project, ActionBroadcast<SonarProperties>> actionBroadcastMap, Project project) {
         ActionBroadcast<SonarProperties> actionBroadcast = new ActionBroadcast<SonarProperties>();
         actionBroadcastMap.put(project, actionBroadcast);
         return actionBroadcast;
     }
 
-    private SonarRunner createTask(final Project project, final Map<Project, ActionBroadcast<SonarProperties>> actionBroadcastMap) {
+    private SonarRunner createSonarRunnerTask(final Project project, final Map<Project, ActionBroadcast<SonarProperties>> actionBroadcastMap) {
         SonarRunner sonarRunnerTask = project.getTasks().create(SonarRunnerExtension.SONAR_RUNNER_TASK_NAME, SonarRunner.class);
         sonarRunnerTask.setDescription("Analyzes " + project + " and its subprojects with Sonar Runner.");
 

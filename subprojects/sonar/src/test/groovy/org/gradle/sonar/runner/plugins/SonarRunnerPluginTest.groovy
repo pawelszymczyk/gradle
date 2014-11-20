@@ -17,6 +17,7 @@
 
 package org.gradle.sonar.runner.plugins
 
+import com.google.common.io.Files
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.TaskDependencyMatchers
@@ -26,6 +27,7 @@ import org.gradle.process.internal.DefaultJavaForkOptions
 import org.gradle.process.internal.JavaExecHandleBuilder
 import org.gradle.sonar.runner.SonarRunnerExtension
 import org.gradle.sonar.runner.SonarRunnerRootExtension
+import org.gradle.sonar.runner.tasks.GenerateSonarProperties
 import org.gradle.sonar.runner.tasks.SonarRunner
 import org.gradle.test.fixtures.file.TestFile
 import org.gradle.util.SetSystemProperties
@@ -441,5 +443,39 @@ class SonarRunnerPluginTest extends Specification {
 
         then:
         handleBuilder.classpath.files*.name.contains("sonar-runner-dist-2.4.jar")
+    }
+
+    def "adds a generateSonarProperties task to the target project"() {
+        expect:
+        parentProject.tasks.findByName("sonarProperties") instanceof GenerateSonarProperties
+        parentSonarPropertiesTask().description == "Creates sonar-project.properties file in a specified directory."
+
+        childProject.tasks.findByName("sonarProperties") == null
+    }
+
+    def "creates sonar-project.properties in default directory"() {
+
+        when:
+        parentSonarPropertiesTask().run()
+
+        then:
+        new File(parentSonarPropertiesTask().getTemporaryDir(), "sonar-project.properties").exists()
+    }
+
+    def "creates sonar-project.properties in specified directory"() {
+        File myTempDir = Files.createTempDir()
+        parentProject.sonarProperties {
+            directory myTempDir.absolutePath
+        }
+
+        when:
+        parentSonarPropertiesTask().run()
+
+        then:
+        new File(myTempDir.absolutePath, "sonar-project.properties").exists()
+    }
+
+    private GenerateSonarProperties parentSonarPropertiesTask() {
+        parentProject.tasks.sonarProperties as GenerateSonarProperties
     }
 }
