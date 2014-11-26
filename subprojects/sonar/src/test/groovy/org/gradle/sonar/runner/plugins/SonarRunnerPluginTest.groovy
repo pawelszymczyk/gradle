@@ -447,10 +447,10 @@ class SonarRunnerPluginTest extends Specification {
 
     def "adds a generateSonarProperties task to the target project"() {
         expect:
-        parentProject.tasks.findByName("sonarProperties") instanceof GenerateSonarProperties
-        parentSonarPropertiesTask().description == "Creates sonar-project.properties file in a specified directory."
+        parentProject.tasks.findByName("generateSonarProperties") instanceof GenerateSonarProperties
+        parentSonarPropertiesTask().description == "Generates sonar-project.properties file in a specified directory."
 
-        childProject.tasks.findByName("sonarProperties") == null
+        childProject.tasks.findByName("generateSonarProperties") == null
     }
 
     def "creates sonar-project.properties in default directory"() {
@@ -464,8 +464,8 @@ class SonarRunnerPluginTest extends Specification {
 
     def "creates sonar-project.properties in specified directory"() {
         File myTempDir = Files.createTempDir()
-        parentProject.sonarProperties {
-            directory myTempDir.absolutePath
+        parentProject.generateSonarProperties {
+            directory = myTempDir.absolutePath
         }
 
         when:
@@ -476,6 +476,6 @@ class SonarRunnerPluginTest extends Specification {
     }
 
     private GenerateSonarProperties parentSonarPropertiesTask() {
-        parentProject.tasks.sonarProperties as GenerateSonarProperties
+        parentProject.tasks.generateSonarProperties as GenerateSonarProperties
     }
 }

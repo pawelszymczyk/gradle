@@ -38,6 +38,7 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.listener.ActionBroadcast;
+import org.gradle.sonar.runner.GenerateSonarPropertiesExtension;
 import org.gradle.sonar.runner.SonarProperties;
 import org.gradle.sonar.runner.SonarRunnerExtension;
 import org.gradle.sonar.runner.SonarRunnerRootExtension;
@@ -105,8 +106,10 @@ public class SonarRunnerPlugin implements Plugin<Project> {
     }
 
     private void createSonarPropertiesTask(Project project) {
-        GenerateSonarProperties sonarProperties = project.getTasks().create("generateSonarProperties", GenerateSonarProperties.class);
+        GenerateSonarProperties sonarProperties = project.getTasks().create(GenerateSonarPropertiesExtension.TASK_NAME, GenerateSonarProperties.class);
         sonarProperties.setDescription("Generates sonar-project.properties file in a specified directory.");
+
+        project.getExtensions().create(GenerateSonarPropertiesExtension.EXTENSION_NAME, GenerateSonarPropertiesExtension.class);
     }
 
     private ActionBroadcast<SonarProperties> addBroadcaster(Map<Project, ActionBroadcast<SonarProperties>> actionBroadcastMap, Project project) {
